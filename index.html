@@ -1,0 +1,260 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+  
+    <title>Bkoudai&#x27;s Blog</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="shortcut icon" href="/favicon.ico">
+
+    <link rel="stylesheet" href="demo.css"/>
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+  
+    <meta name="referrer" content="no-referrer-when-downgrade" />
+    <style>
+        .fade-enter-active,
+        .fade-leave-active {
+            transition: all .4s ease;
+        }
+         
+        .fade-enter, .fade-leave-to{
+            transform: translateX(100px);
+            opacity: 0;
+        }
+		
+    </style>
+</head>
+<body class="home-template">
+
+<div id="container" style="min-height:500px;" hidden="hidden">
+
+    <div id="author">
+    <a href=""><div></div></a>
+    <div id="author_links">
+        <a style="color:#000" href="">
+            <div style="font-weight: bold;font-size: 31px;">Bkoudai</div>
+            <div style="font-size: 37px;margin-top: 5px;margin-bottom: 15px;">CASE</div>
+        </a>
+        <a @click.prevent="changPage(2);">my</a><br>
+    <!--    <a href="">my writings</a><br>
+        <a href="">my tweeter</a>
+        <hr style="margin: 15px auto; width: 78px;"/>
+        <a href="">rss feed</a> -->
+    </div>
+    </div>
+
+    
+<transition mode="out-in" name="fade" >
+<component :is="pageshow" v-bind:cid="articleId" v-if="showflag"></component>
+</transition>
+<main class="content" role="main" style="height: 500px;" >
+
+	<div style="height: 300px;">
+    <article class="post tag-short-stories" v-for=" article in  articlelist">
+        <header class="post-header">
+            <h1><a  @click.prevent="changPage(article.cid);">{{article.title}}</a></h1>
+            <span class="post-meta">
+            <time >{{article.created | timeStampFormat}}</time>
+            | <a href="/tag/short-stories/">{{article.tags}}</a>
+            </span>
+
+        </header>
+    </article>
+	</div>
+
+    <br>
+
+    <span style="text-align:center">
+    <nav class="pagination" role="navigation" >
+		  <a class="older-posts" @click="last()"  v-if="pageNum > 1"><span aria-hidden="true">&larr;</span>Newer Posts </a>
+    <span class="page-number">Page {{pageNum}} of {{ allPage}}</span>
+        <a class="older-posts" @click="next()"  v-if="pageNum < allPage">Older Posts <span aria-hidden="true">&rarr;</span></a>
+</nav>
+
+    </span>
+
+    
+
+</main>
+
+</div>
+<template id="page">
+	<div style="margin-left: 170px;">
+		<style src="md.css" scoped></style>
+		<!-- <div id="pageHtml"></div> -->
+		<div v-html="compiledMarkdown(articleContent)"></div>
+	</div>
+</template>
+
+
+</body>
+<!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> -->
+<script src="vue.js"></script>
+<script src="jquery-3.3.1.min.js"></script>
+		<script src="marked.js" ></script>
+		
+		<!-- <script src="lodash.js" ></script></script> -->
+<script type="text/javascript">
+
+	/***注册组件START**/
+	
+	Vue.component('nothing',{
+		template:'<span hidden="hidden"></span>'
+		
+	});
+		Vue.component('page',{
+			template:'#page',
+			data(){
+			    return {
+			        // articleId:'2',
+					articleContent:'# hello'
+			    }
+			},
+			 props:['cid'],
+			 mounted () {
+				 
+				 this.$nextTick(function () {
+				     this.article( this.cid) ;
+					 	$('#container').css("margin-left","1px");
+						$('main').css("position","fixed")
+						$('main').css("right","-230px")
+						$('main').css("top","10px")
+						$('.pagination').css("text-align","left")
+					
+				   });
+			
+			
+			 },
+			watch: {
+			    cid (newV, oldV) { // watch监听props里status的变化，然后执行操作
+			      console.log(newV, oldV);
+				  this.article( newV) ;
+			    
+			    }
+			  },
+			methods:{
+				
+				compiledMarkdown: function (text) {
+			
+				  return marked(text, { sanitize: true })
+				},
+				article:  function(cid){
+					var that=this;
+					 $.ajax({
+						type : 'get',
+						url : 'https://118.89.28.55/api/article/'+cid,
+						dataType : 'json',
+						success : function(data) {that.articleContent=data.rows[0].content;				},
+						error:function(data){
+						console.log(data);
+							
+						}
+						
+						});
+					 
+				}
+			
+			}
+		})
+	/***注册组件END**/	
+
+	function time(time = +new Date()) {
+	    var date = new Date(time + 8 * 3600 * 1000);
+	    return date.toJSON().substr(0, 10).replace('T', ' ').replace(/-/g, '.');
+	}
+	// 时间格式化过滤器
+	Vue.filter('timeStampFormat', function(timeStamp) {
+			var s =timeStamp.toString()
+			if(s.length===10){
+				return	time(timeStamp*1000)
+			}else if(s.length===13){
+				return	time(timeStamp)
+			}
+		
+		
+	});
+	
+	
+	var vm=new Vue({
+		el:'#container',
+		data:{
+			articlelist:[],
+			pageNum:1,
+			pageSize:4,
+			total:0,
+			allPage:0,
+			articleId:2,
+			pageshow: 'nothing',
+			showflag:false
+			
+		},
+		 mounted () { 
+			
+			this.$nextTick(function () {
+			     this.show(1,4);
+			  }); 
+			 
+		 },
+		methods:{
+			show:function(pageNum,pageSize){
+				 var that=this;
+				 $.ajax({
+				 	type : 'get',
+				 	url : 'https://118.89.28.55/api/article',
+				 	dataType : 'json',
+				 	
+				 	data : {'pageNum':pageNum,'pageSize':pageSize},
+				 	//jsonpcallback:alert(),
+				 	success : function(data) {
+						console.log(data);
+				 		that.total=data.total;
+				 		that.articlelist=data.rows;
+						that.allPage= Math.ceil(that.total/pageSize);
+				 		$('#container').removeAttr("hidden");		
+				 	},
+				 	error:function(data){
+				 		console.log(data);
+				 		
+				 	}
+					
+					});
+				 
+			},
+			changPage:function(id){
+				var that=this;
+				that.pageshow='page';
+				that.articleId=id;
+				if(that.showflag===false){
+					that.showflag=true;
+				}else{
+					that.showflag=false;
+					setTimeout(function(){that.showflag=true;},500);
+				}
+				
+			
+				
+				
+				
+				
+			},
+			next:function(){
+				this.pageNum=this.pageNum+1;
+				
+				 this.show(this.pageNum,this.pageSize);
+				
+			},
+			last:function(){
+				this.pageNum=this.pageNum-1;
+				
+				 this.show(this.pageNum,this.pageSize);
+				
+			}
+		}
+		
+	})
+</script>
+</html>

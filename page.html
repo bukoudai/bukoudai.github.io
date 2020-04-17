@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="md.css"/>
+</head>
+<body >
+
+<div id="page">
+
+    <textarea :value="input" hidden="hidden"></textarea>
+     <div v-html="compiledMarkdown(articleContent)"></div>
+</div>
+
+</body>
+<script src="vue.js"></script>
+<script src="jquery-3.3.1.min.js"></script>
+<script src="marked.js"></script>
+<script src="lodash.js"></script>
+
+<script type="text/javascript">
+	 //获取url中的参数
+	    function getUrlParam(name) {
+	        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+	        var r = window.location.search.substr(1).match(reg);  //匹配目标参数
+	        if (r != null) return unescape(r[2]);
+	        return null; //返回参数值
+	    }
+	function article(cid){
+		 
+		 $.ajax({
+		 	type : 'get',
+		 	url : 'http://localhost:5010/api/article/'+cid,
+		 	dataType : 'json',
+		 	success : function(data) {
+		 		
+		 		vm.articlelist=data.rows;
+				vm.articleContent=vm.articlelist[0].content;
+		 				
+		 	},
+		 	error:function(data){
+		 		console.log(data);
+		 		
+		 	}
+			
+			});
+		 
+	}
+	
+	
+	var vm=new Vue({
+		el:'#page',
+		data:{
+			articlelist:[],
+			articleContent:"# Loading..",
+			pageNum:1,
+			pageSize:4,
+			total:0,
+			allPage:0,
+			input:"# Loading.."
+		},
+		 mounted () {
+			article(getUrlParam("cid")) ;
+
+
+		 },
+		methods:{
+			next:function(){
+				vm.pageNum=vm.pageNum+1;
+
+				show(vm.pageNum,vm.pageSize);
+
+			},
+			compiledMarkdown: function (text) {
+
+			  return marked(text, { sanitize: true })
+			}
+
+		}
+		
+	})
+</script>
+
+</html>
