@@ -100,6 +100,12 @@
 		<!-- <script src="lodash.js" ></script></script> -->
 <script type="text/javascript">
 
+	 var urlHost;
+	 if(window.location.host.startsWith("127.0.0.1")){
+			 urlHost="http://127.0.0.1:5010";	 
+	 }else{
+		 urlHost="http://118.89.28.55";
+	 }
 	/***注册组件START**/
 	
 	Vue.component('nothing',{
@@ -131,7 +137,7 @@
 			 },
 			watch: {
 			    cid (newV, oldV) { // watch监听props里status的变化，然后执行操作
-			      console.log(newV, oldV);
+			      // console.log(newV, oldV);
 				  this.article( newV) ;
 			    
 			    }
@@ -146,7 +152,7 @@
 					var that=this;
 					 $.ajax({
 						type : 'get',
-						url : 'https://118.89.28.55/api/article/'+cid,
+						url : urlHost+'/api/article/'+cid,
 						dataType : 'json',
 						success : function(data) {that.articleContent=data.rows[0].content;				},
 						error:function(data){
@@ -204,13 +210,13 @@
 				 var that=this;
 				 $.ajax({
 				 	type : 'get',
-				 	url : 'https://118.89.28.55/api/article',
+				 	url : urlHost+'/api/article',
 				 	dataType : 'json',
 				 	
 				 	data : {'pageNum':pageNum,'pageSize':pageSize},
 				 	//jsonpcallback:alert(),
 				 	success : function(data) {
-						console.log(data);
+						// console.log(data);
 				 		that.total=data.total;
 				 		that.articlelist=data.rows;
 						that.allPage= Math.ceil(that.total/pageSize);
