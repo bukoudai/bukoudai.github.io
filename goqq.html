@@ -1,0 +1,11 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>打开 QQ 面板</title>
+<p id="s">正在打开…</p>
+<script>
+var t = location.hash.replace(/^#/, '');
+var u = 'http://127.0.0.1:6099/webui' + (t ? '?token=' + encodeURIComponent(t) : '');
+document.getElementById('s').innerHTML = '<a href="' + u + '">点这里打开 QQ 面板</a>';
+setTimeout(function () { location.replace(u); }, 300);
+</script>
