@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>无人机题库复习2025</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind主题 -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3B82F6',
+            secondary: '#10B981',
+            accent: '#F59E0B',
+            dark: '#1E293B',
+            light: '#F8FAFC'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .option-hover {
+        @apply transition-all duration-200 hover:shadow-md hover:-translate-y-0.5;
+      }
+      .btn-effect {
+        @apply transform transition-all duration-200 active:scale-95;
+      }
+      .card-shadow {
+        @apply shadow-lg dark:shadow-dark/20;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-light dark:bg-dark text-gray-800 dark:text-gray-100 min-h-screen transition-colors duration-300">
+  <!-- 顶部导航栏 -->
+  <header class="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-md transition-colors duration-300">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <h1 class="text-xl font-bold text-primary">无人机题库</h1>
+      <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors btn-effect">
+        <i class="fa fa-moon-o dark:hidden text-xl"></i>
+        <i class="fa fa-sun-o hidden dark:block text-xl"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 py-6 max-w-md">
+    <!-- 模式选择区域 -->
+    <section id="mode-selector" class="mb-8 bg-white dark:bg-gray-800 rounded-xl p-5 card-shadow">
+      <h2 class="text-lg font-semibold mb-4 text-center">选择刷题模式</h2>
+      <div class="grid grid-cols-1 gap-3">
+        <button id="range-1-50" class="w-full py-3 px-4 bg-primary/10 dark:bg-primary/20 text-primary rounded-lg font-medium option-hover btn-effect border-2 border-primary/30">
+          1~50题
+        </button>
+        <button id="range-51-100" class="w-full py-3 px-4 bg-primary/10 dark:bg-primary/20 text-primary rounded-lg font-medium option-hover btn-effect border-2 border-primary/30">
+          51~100题
+        </button>
+        <button id="random-mode" class="w-full py-3 px-4 bg-accent/10 dark:bg-accent/20 text-accent rounded-lg font-medium option-hover btn-effect border-2 border-accent/30">
+          随机出题
+        </button>
+      </div>
+    </section>
+
+    <!-- 题目区域 -->
+    <section id="question-container" class="mb-8 bg-white dark:bg-gray-800 rounded-xl p-5 card-shadow hidden">
+      <div class="flex justify-between items-center mb-4">
+        <span id="question-number" class="text-sm bg-primary/10 dark:bg-primary/20 text-primary px-3 py-1 rounded-full">第1题</span>
+        <span id="progress" class="text-sm text-gray-500 dark:text-gray-400">1/50</span>
+      </div>
+      
+      <h3 id="question-content" class="text-lg font-medium mb-6 leading-relaxed">题目内容将在这里显示</h3>
+      
+      <div id="options" class="space-y-3 mb-6">
+        <!-- 选项将通过JS动态生成 -->
+      </div>
+      
+      <div id="explanation" class="hidden bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border border-gray-200 dark:border-gray-600 mb-4">
+        <div class="flex items-center mb-2">
+          <i class="fa fa-check-circle text-secondary mr-2"></i>
+          <span id="correct-answer" class="font-medium"></span>
+        </div>
+        <p id="explanation-text" class="text-sm text-gray-600 dark:text-gray-300"></p>
+      </div>
+      
+      <button id="next-question" class="w-full py-3 bg-primary text-white rounded-lg font-medium hidden option-hover btn-effect">
+        下一题 <i class="fa fa-arrow-right ml-1"></i>
+      </button>
+    </section>
+
+    <!-- 完成提示 -->
+    <section id="complete-message" class="mb-8 bg-white dark:bg-gray-800 rounded-xl p-6 text-center card-shadow hidden">
+      <div class="w-16 h-16 bg-secondary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="fa fa-trophy text-2xl text-secondary"></i>
+      </div>
+      <h2 class="text-xl font-bold mb-2">完成练习！</h2>
+      <p class="text-gray-600 dark:text-gray-300 mb-6">恭喜您完成了本次题库练习</p>
+      <button id="restart" class="w-full py-3 bg-primary text-white rounded-lg font-medium option-hover btn-effect">
+        重新开始 <i class="fa fa-refresh ml-1"></i>
+      </button>
+    </section>
+  </main>
+
+  <footer class="bg-white dark:bg-gray-900 py-4 mt-auto transition-colors duration-300">
+    <div class="container mx-auto px-4 text-center text-sm text-gray-500 dark:text-gray-400">
+      <p>无人机题库复习 &copy; 2025 侯子猎人</p>
+    </div>
+  </footer>
+
+  <script>
+    // 题库数据 - 1-100题
+    const questionBank = [
+      // 1-50题（保持不变）
+      {
+        id: 1,
+        question: "无人机的英文缩写是",
+        options: ["A、UVS", "B、UAS", "C、UAV"],
+        answer: "C",
+        explanation: "无人机英文“Unmanned Aerial Vehicle”，缩写为UAV。"
+      },
+      {
+        id: 2,
+        question: "轻型无人机，是指空机质量",
+        options: ["A、小于7kg", "B、大于7kg，小于116kg", "C、大于116kg，小于5700kg"],
+        answer: "B",
+        explanation: "根据相关标准，轻型无人机空机质量大于7kg，小于116kg。"
+      },
+      {
+        id: 3,
+        question: "近程无人机活动半径在",
+        options: ["A、小于15km", "B、15-50km", "C、200-800km"],
+        answer: "B",
+        explanation: "近程无人机活动半径通常在15-50km范围内。"
+      },
+      {
+        id: 4,
+        question: "任务高度一般在0-100m之间的无人机为",
+        options: ["A、超低空无人机", "B、低空无人机", "C、中空无人机"],
+        answer: "A",
+        explanation: "任务高度在0-100m之间的无人机属于超低空无人机。"
+      },
+      {
+        id: 5,
+        question: "不属于无人机机型的是",
+        options: ["A、塞纳斯", "B、侦察兵", "C、捕食者"],
+        answer: "A",
+        explanation: "塞纳斯是有人驾驶飞机，侦察兵和捕食者是常见无人机机型。"
+      },
+      {
+        id: 6,
+        question: "不属于无人机系统的是",
+        options: ["A、飞行器平台", "B、飞行员", "C、导航飞控系统"],
+        answer: "B",
+        explanation: "无人机是无人驾驶的，不需要飞行员，飞行器平台和导航飞控系统是其组成部分。"
+      },
+      {
+        id: 7,
+        question: "常规固定翼/旋翼平台是大气层内飞行的空气的航空器",
+        options: ["A、重于", "B、轻于", "C、等于"],
+        answer: "A",
+        explanation: "常规固定翼/旋翼平台依靠与空气相互作用产生升力，是重于空气的航空器。"
+      },
+      {
+        id: 8,
+        question: "不属于抵消旋翼机反转力矩的方法有",
+        options: ["A、尾桨", "B、共轴旋翼", "C、增大旋翼半径"],
+        answer: "C",
+        explanation: "尾桨和共轴旋翼可抵消旋翼机反转力矩，增大旋翼半径不能抵消该力矩。"
+      },
+      {
+        id: 9,
+        question: "多轴旋翼飞行器通过改变控制飞行轨迹。",
+        options: ["A、总距杆", "B、转速", "C、尾桨"],
+        answer: "B",
+        explanation: "多轴旋翼飞行器通过改变电机转速来改变各旋翼产生的升力，从而控制飞行轨迹。"
+      },
+      {
+        id: 10,
+        question: "目前主流的民用无人机所采用的动力系统通常为活塞式发动机和两种。",
+        options: ["A、涡喷发动机", "B、涡扇发动机", "C、电动机"],
+        answer: "C",
+        explanation: "主流民用无人机动力系统常为活塞式发动机和电动机，涡喷、涡扇发动机应用较少。"
+      },
+      {
+        id: 11,
+        question: "活塞发动机系统常采用的增压技术主要是用来。",
+        options: ["A、提高功率", "B、减少废气量", "C、增加转速"],
+        answer: "A",
+        explanation: "活塞发动机采用增压技术主要是为了提高进气压力，进而提高发动机功率。"
+      },
+      {
+        id: 12,
+        question: "电动动力系统主要由动力电机、动力电源和组成。",
+        options: ["A、电池", "B、调速系统", "C、无刷电机"],
+        answer: "B",
+        explanation: "电动动力系统由动力电机、动力电源和调速系统构成，调速系统用于控制电机转速。"
+      },
+      {
+        id: 13,
+        question: "从应用上说，涡桨发动机适用于。",
+        options: ["A、中低空、低速短距/垂直起降无人机", "B、高空长航时无人机/无人战斗机", "C、中高空长航时无人机"],
+        answer: "C",
+        explanation: "涡桨发动机效率较高，适用于中高空长航时无人机。"
+      },
+      {
+        id: 14,
+        question: "属于无人机飞控子系统的是",
+        options: ["A、无人机姿态稳定与控制", "B、无人机任务设备管理与控制", "C、信息收集与传递"],
+        answer: "A",
+        explanation: "无人机飞控子系统主要负责姿态稳定与控制，保障飞行稳定性。"
+      },
+      {
+        id: 15,
+        question: "不属于无人机飞控子系统所需信息的是",
+        options: ["A、经/纬度", "B、姿态角", "C、空速"],
+        answer: "A",
+        explanation: "飞控子系统主要关注飞机自身状态信息，经纬度更多用于导航定位，非飞控子系统必需。"
+      },
+      {
+        id: 16,
+        question: "不应属于无人机飞控计算机任务范畴的是",
+        options: ["A、数据中继", "B、姿态稳定与控制", "C、自主飞行控制"],
+        answer: "A",
+        explanation: "数据中继通常由专门的数据链路设备完成，不属于飞控计算机主要任务。"
+      },
+      {
+        id: 17,
+        question: "无人机通过控制舵面和发动机节风门来实现无人机控制。",
+        options: ["A、伺服执行机构", "B、操纵杆", "C、脚蹬"],
+        answer: "A",
+        explanation: "无人机依靠伺服执行机构接收控制信号，驱动舵面和调节发动机节风门。"
+      },
+      {
+        id: 18,
+        question: "无人机电气系统中电源和两者组合统称为供电系统。",
+        options: ["A、用电设备", "B、配电系统", "C、供电线路"],
+        answer: "B",
+        explanation: "供电系统由电源和配电系统组成，负责分配和管理电能。"
+      },
+      {
+        id: 19,
+        question: "无人机搭载任务设备重量主要受限制。",
+        options: ["A、飞机自重", "B、飞机载重能力", "C、飞机最大起飞能力"],
+        answer: "B",
+        explanation: "飞机载重能力决定了可搭载任务设备的重量，飞机自重和最大起飞能力并非直接限制因素。"
+      },
+      {
+        id: 20,
+        question: "无人机配平的主要考虑是沿纵轴的前后位置",
+        options: ["A、气动焦点", "B、发动机", "C、重心"],
+        answer: "C",
+        explanation: "无人机配平主要关注重心沿纵轴位置，以保证飞行稳定性。"
+      },
+      {
+        id: 21,
+        question: "无人机计算装载重量和重心的方法主要有：计算法、图表法和。",
+        options: ["A、试凑法", "B、查表法", "C、约取法"],
+        answer: "B",
+        explanation: "计算装载重量和重心常用计算法、图表法和查表法。"
+      },
+      {
+        id: 22,
+        question: "指挥控制与是无人机地面站的主要功能",
+        options: ["A、飞行状态监控", "B、任务规划", "C、飞行视角显示"],
+        answer: "B",
+        explanation: "无人机地面站主要功能包括指挥控制和任务规划，保障任务执行。"
+      },
+      {
+        id: 23,
+        question: "无人机地面站系统不包括",
+        options: ["A、机载电台", "B、无人机控制站", "C、载荷控制站"],
+        answer: "A",
+        explanation: "机载电台安装在无人机上，不属于地面站系统，控制站和载荷控制站是地面站组成部分。"
+      },
+      {
+        id: 24,
+        question: "无人机地面站显示系统应能显示信息。",
+        options: ["A、无人机飞行员状态", "B、飞机状态及链路、载荷状态", "C、飞行空域信息"],
+        answer: "B",
+        explanation: "地面站显示系统需展示飞机状态、链路和载荷状态，便于操作人员掌握情况。"
+      },
+      {
+        id: 25,
+        question: "地面站地图航迹显示系统可为无人机驾驶员提供飞机等信息。",
+        options: ["A、飞行姿态", "B、位置", "C、飞控状态"],
+        answer: "B",
+        explanation: "地图航迹显示系统主要提供飞机位置信息，方便驾驶员定位和规划路线。"
+      },
+      {
+        id: 26,
+        question: "不属于无人机起飞方式的是",
+        options: ["A、弹射", "B、滑跑", "C、滑翔"],
+        answer: "C",
+        explanation: "无人机常见起飞方式有弹射和滑跑，滑翔不是其常规起飞方式。"
+      },
+      {
+        id: 27,
+        question: "不属于无人机回收方式的是",
+        options: ["A、伞降", "B、飘落", "C、气囊回收"],
+        answer: "B",
+        explanation: "无人机回收方式包括伞降和气囊回收，飘落无法精准控制，不是常见回收方式。"
+      },
+      {
+        id: 28,
+        question: "无人机在控制增稳飞行控制模式下，期间飞控子系统控制。",
+        options: ["A、参与", "B、不参与", "C、不确定"],
+        answer: "A",
+        explanation: "控制增稳模式下，飞控子系统参与控制，增强飞行稳定性。"
+      },
+      {
+        id: 29,
+        question: "无人机系统通讯链路主要包括：指挥与控制（C.&C.），，感知和规避（S&A.）三种。",
+        options: ["A、空中交通管制（A.TC.）", "B、视频通信", "C、通信中继"],
+        answer: "A",
+        explanation: "无人机系统通讯链路包含指挥控制、空中交通管制和感知规避。"
+      },
+      {
+        id: 30,
+        question: "目前世界上无人机的频谱使用主要集中在UHF、L和波段",
+        options: ["A、C", "B、VHF", "C、任意"],
+        answer: "A",
+        explanation: "当前无人机频谱主要集中在UHF、L和C波段。"
+      },
+      {
+        id: 31,
+        question: "对于带襟翼无人机，放下襟翼，飞机的升力将，阻力将。",
+        options: ["A、增大、减小", "B、增大、增大", "C、减小、减小"],
+        answer: "B",
+        explanation: "放下襟翼可增大机翼面积和弯度，使升力和阻力都增大。"
+      },
+      {
+        id: 32,
+        question: "对于带襟翼无人机，放下襟翼，飞机的失速速度将",
+        options: ["A、增大", "B、减小", "C、不变"],
+        answer: "B",
+        explanation: "放下襟翼增加了机翼升力系数，使失速速度减小。"
+      },
+      {
+        id: 33,
+        question: "相同迎角，飞行速度增大一倍，阻力增加为原来的",
+        options: ["A、一倍", "B、二倍", "C、四倍"],
+        answer: "C",
+        explanation: "根据空气动力学原理，阻力与速度平方成正比，速度增大一倍，阻力变为原来四倍。"
+      },
+      {
+        id: 34,
+        question: "通过改变迎角，无人机飞行员可以控制飞机的",
+        options: ["A、升力、空速、阻力", "B、升力、空速、阻力、重量", "C、升力、拉力、阻力"],
+        answer: "A",
+        explanation: "改变迎角可改变机翼气流状态，进而控制升力、空速和阻力，飞机重量不受迎角直接影响。"
+      },
+      {
+        id: 35,
+        question: "放全襟翼下降，无人机能以",
+        options: ["A、较大的下降角，较小的速度下降", "B、较小的下降角，较大的速度下降", "C、较大的下降角，较大的速度下降"],
+        answer: "A",
+        explanation: "放全襟翼增加阻力，可使无人机以较大下降角、较小速度下降，便于精确降落。"
+      },
+      {
+        id: 36,
+        question: "无人机飞行员操纵副翼时，飞机将绕",
+        options: ["A、横轴的俯仰运动", "B、纵轴的滚转运动", "C、立轴的偏转运动"],
+        answer: "B",
+        explanation: "操纵副翼会使机翼一侧升力变化，导致飞机绕纵轴滚转。"
+      },
+      {
+        id: 37,
+        question: "无人机飞行员操纵升降舵时，飞机将绕",
+        options: ["A、横轴的俯仰运动", "B、纵轴的滚转运动", "C、立轴的偏转运动"],
+        answer: "A",
+        explanation: "操纵升降舵改变机翼尾部升力，使飞机绕横轴俯仰运动。"
+      },
+      {
+        id: 38,
+        question: "无人机飞行员操纵方向舵时，飞机将绕",
+        options: ["A、横轴的俯仰运动", "B、纵轴的滚转运动", "C、立轴的偏转运动"],
+        answer: "C",
+        explanation: "操纵方向舵改变飞机尾部侧向力，使飞机绕立轴偏转。"
+      },
+      {
+        id: 39,
+        question: "向右压盘时，无人机",
+        options: ["A、右翼升力大于左翼升力", "B、左翼升力大于右翼升力", "C、左翼升力等于右翼升力"],
+        answer: "B",
+        explanation: "向右压盘使右翼副翼上偏、左翼副翼下偏，左翼升力增大。"
+      },
+      {
+        id: 40,
+        question: "无人机飞行员向前推杆，飞机的迎角",
+        options: ["A、增大", "B、减小", "C、先减小后增大"],
+        answer: "B",
+        explanation: "向前推杆使升降舵下偏，机头上仰角度减小，迎角减小。"
+      },
+      {
+        id: 41,
+        question: "向后拉杆，飞机的迎角",
+        options: ["A、增大", "B、减小", "C、先增大后减小"],
+        answer: "A",
+        explanation: "向后拉杆使升降舵上偏，机头上仰，迎角增大。"
+      },
+      {
+        id: 42,
+        question: "飞机的下滑角是",
+        options: ["A、升力与阻力的夹角", "B、飞行轨迹与水平面的夹角", "C、阻力与重力的夹角"],
+        answer: "B",
+        explanation: "下滑角是飞机飞行轨迹与水平面的夹角。"
+      },
+      {
+        id: 43,
+        question: "使飞机获得最大下滑距离的速度是",
+        options: ["A、最大下滑速度", "B、失速速度", "C、下滑有利速度"],
+        answer: "C",
+        explanation: "下滑有利速度能使飞机下滑阻力最小，获得最大下滑距离。"
+      },
+      {
+        id: 44,
+        question: "下滑有利速度使",
+        options: ["A、飞机下滑阻力最小", "B、飞机下滑角最大", "C、飞机下滑升力最大"],
+        answer: "A",
+        explanation: "下滑有利速度的特点是使飞机下滑阻力最小。"
+      },
+      {
+        id: 45,
+        question: "用下滑有利速度下滑，飞机的",
+        options: ["A、升阻比最大", "B、升力最大", "C、下滑角最大"],
+        answer: "A",
+        explanation: "下滑有利速度时飞机升阻比最大，飞行效率最高。"
+      },
+      {
+        id: 46,
+        question: "在稳定的直线飞行中，下面关于飞机升力的说法，正确的是",
+        options: ["A、空速小时必须减小迎角，以产生足够的升力来保持高度", "B、空速大时必须减小迎角，以产生足够的升力来保持高度", "C、空速大时必须增大迎角，以产生足够的升力来保持高度"],
+        answer: "B",
+        explanation: "根据升力公式，空速大时减小迎角可保持升力平衡，维持飞行高度。"
+      },
+      {
+        id: 47,
+        question: "关于机翼的剖面形状（翼型），下面说法正确的是",
+        options: ["A、上下翼面的弯度相同", "B、机翼上表面的弯度小于下表面的弯度", "C、机翼上表面的弯度大于下表面的弯度"],
+        answer: "C",
+        explanation: "常见机翼上表面弯度大于下表面，以产生向上的升力。"
+      },
+      {
+        id: 48,
+        question: "空速减小时，为保持高度，应实施的操纵是",
+        options: ["A、增大迎角，使升力的增加大于阻力的增加", "B、增大迎角，以保持升力不变", "C、减小迎角，以保持阻力不变"],
+        answer: "B",
+        explanation: "空速减小，增大迎角可维持升力，保持飞行高度。"
+      },
+      {
+        id: 49,
+        question: "根据机翼的设计特点，其产生的升力来自于",
+        options: ["A、机翼上下表面的正压强", "B、机翼下表面的负压和上表面的正压", "C、机翼下表面的正压和上表面的负压"],
+        answer: "C",
+        explanation: "机翼特殊形状使气流流经时，下表面产生正压、上表面产生负压，从而产生升力。"
+      },
+      {
+        id: 50,
+        question: "飞机转弯的向心力是",
+        options: ["A、飞机的拉力", "B、方向舵上产生的气动力", "C、飞机升力的水平分力"],
+        answer: "C",
+        explanation: "飞机转弯时，升力的水平分力提供向心力，使飞机转弯。"
+      },
+      // 新增51-100题
+      {
+        id: 51,
+        question: "大气层最底层为",
+        options: ["A、平流层", "B、对流层", "C、中间层"],
+        answer: "B",
+        explanation: "大气层从低到高依次为对流层、平流层、中间层、热层和散逸层，最底层为对流层。"
+      },
+      {
+        id: 52,
+        question: "下列哪种不是影响空气密度的因素",
+        options: ["A、气压", "B、湿度", "C、风向"],
+        answer: "C",
+        explanation: "空气密度受气压、温度和湿度影响，风向不直接影响空气密度。"
+      },
+      {
+        id: 53,
+        question: "标准大气条件下，海平面的气压为",
+        options: ["A、1013.25hPa", "B、1000hPa", "C、1010hPa"],
+        answer: "A",
+        explanation: "国际标准大气规定，海平面的标准气压为1013.25百帕(hPa)。"
+      },
+      {
+        id: 54,
+        question: "在大气层中，空气密度",
+        options: ["A、随高度增加而增大", "B、随高度增加而减小", "C、不随高度变化"],
+        answer: "B",
+        explanation: "随着高度增加，大气层的空气越来越稀薄，空气密度逐渐减小。"
+      },
+      {
+        id: 55,
+        question: "空气的粘性主要来自于",
+        options: ["A、空气分子的热运动", "B、空气分子间的引力", "C、空气的可压缩性"],
+        answer: "A",
+        explanation: "空气的粘性主要是由于空气分子的热运动引起的动量交换。"
+      },
+      {
+        id: 56,
+        question: "下列哪种不属于气象要素",
+        options: ["A、气温", "B、风向", "C、飞机重量"],
+        answer: "C",
+        explanation: "气象要素是指描述大气状态的物理量，如气温、气压、湿度、风向风速等，飞机重量不属于气象要素。"
+      },
+      {
+        id: 57,
+        question: "相对湿度是指",
+        options: ["A、空气中水汽含量与同温度下饱和水汽含量的百分比", "B、空气中水汽含量与最大可能水汽含量的百分比", "C、空气中水汽压与同温度下饱和水汽压的百分比"],
+        answer: "A",
+        explanation: "相对湿度是指空气中实际水汽含量与同温度下饱和水汽含量的百分比。"
+      },
+      {
+        id: 58,
+        question: "能见度是指",
+        options: ["A、正常人在白天能看清目标物轮廓的最大距离", "B、飞行员在白天能看清目标物的最大距离", "C、正常人在夜间能看清灯光的最大距离"],
+        answer: "A",
+        explanation: "能见度通常定义为正常人在白天能看清和辨认出目标物轮廓的最大距离。"
+      },
+      {
+        id: 59,
+        question: "风切变是指",
+        options: ["A、风速随时间的变化", "B、风速和风向在空间上的突然变化", "C、风向随高度的变化"],
+        answer: "B",
+        explanation: "风切变是指风速和风向在空间上的突然变化，对飞行安全有较大影响。"
+      },
+      {
+        id: 60,
+        question: "雷暴是一种剧烈的对流性天气，其生命周期不包括",
+        options: ["A、积云阶段", "B、成熟阶段", "C、消散阶段", "D、稳定阶段"],
+        answer: "D",
+        explanation: "雷暴的生命周期包括积云阶段、成熟阶段和消散阶段，没有稳定阶段。"
+      },
+      {
+        id: 61,
+        question: "无人机飞行员在飞行前应检查的气象资料不包括",
+        options: ["A、能见度", "B、云高", "C、机场航班时刻"],
+        answer: "C",
+        explanation: "无人机飞行员飞行前应关注能见度、云高、风速等气象资料，机场航班时刻不属于气象资料。"
+      },
+      {
+        id: 62,
+        question: "影响无人机飞行性能的主要气象因素是",
+        options: ["A、风速、风向", "B、气温", "C、以上都是"],
+        answer: "C",
+        explanation: "风速、风向和气温都会影响无人机的飞行性能，如升力、阻力、续航时间等。"
+      },
+      {
+        id: 63,
+        question: "在山区飞行时，最危险的天气是",
+        options: ["A、雾", "B、山谷风", "C、地形雷暴"],
+        answer: "C",
+        explanation: "地形雷暴是山区常见的危险天气，可能伴随强风、降水和雷电，对飞行安全威胁最大。"
+      },
+      {
+        id: 64,
+        question: "当气温高于标准大气温度时，飞机的真实空速将",
+        options: ["A、大于指示空速", "B、小于指示空速", "C、等于指示空速"],
+        answer: "A",
+        explanation: "当气温高于标准大气温度时，空气密度减小，相同指示空速下，真实空速更大。"
+      },
+      {
+        id: 65,
+        question: "气压高度表是通过测量什么来确定高度的",
+        options: ["A、大气温度", "B、大气压力", "C、空气密度"],
+        answer: "B",
+        explanation: "气压高度表通过测量大气压力来确定高度，基于气压随高度增加而减小的原理。"
+      },
+      {
+        id: 66,
+        question: "在北半球，地转偏向力使风",
+        options: ["A、向右偏", "B、向左偏", "C、不偏转"],
+        answer: "A",
+        explanation: "在北半球，地转偏向力使风向右偏转；在南半球，则向左偏转。"
+      },
+      {
+        id: 67,
+        question: "下列哪种云对飞行危害最大",
+        options: ["A、积云", "B、积雨云", "C、层云"],
+        answer: "B",
+        explanation: "积雨云是垂直发展旺盛的云，常伴随雷电、强风、湍流等危险天气，对飞行危害最大。"
+      },
+      {
+        id: 68,
+        question: "辐射雾通常形成于",
+        options: ["A、白天，空气湿润的山谷", "B、夜间，晴朗微风的地面", "C、清晨，有强风的海面"],
+        answer: "B",
+        explanation: "辐射雾通常形成于夜间，当天空晴朗、风力微弱、地面辐射冷却使近地面空气达到饱和时。"
+      },
+      {
+        id: 69,
+        question: "降水按强度可分为",
+        options: ["A、小雨、中雨、大雨", "B、小雨、中雨、大雨、暴雨", "C、毛毛雨、小雨、中雨、大雨、暴雨"],
+        answer: "B",
+        explanation: "降水按强度通常分为小雨、中雨、大雨和暴雨四个等级。"
+      },
+      {
+        id: 70,
+        question: "下列哪种天气现象不属于恶劣天气",
+        options: ["A、雷暴", "B、晴空湍流", "C、微风"],
+        answer: "C",
+        explanation: "雷暴和晴空湍流都属于对飞行有较大影响的恶劣天气，微风对飞行影响较小。"
+      },
+      {
+        id: 71,
+        question: "无人机飞行前，电池检查不包括",
+        options: ["A、电池电量", "B、电池外观", "C、电池生产厂家"],
+        answer: "C",
+        explanation: "飞行前应检查电池电量、外观有无损坏等，电池生产厂家不是飞行前必须检查的内容。"
+      },
+      {
+        id: 72,
+        question: "无人机的维护周期应根据什么确定",
+        options: ["A、使用时间和次数", "B、存放时间", "C、以上都是"],
+        answer: "C",
+        explanation: "无人机的维护周期应综合考虑使用时间、使用次数和存放时间等因素。"
+      },
+      {
+        id: 73,
+        question: "检查无人机螺旋桨时，应注意",
+        options: ["A、螺旋桨是否有裂纹或损坏", "B、螺旋桨安装是否牢固", "C、以上都是"],
+        answer: "C",
+        explanation: "检查螺旋桨时，应注意是否有裂纹或损坏，以及安装是否牢固，确保飞行安全。"
+      },
+      {
+        id: 74,
+        question: "无人机电池的最佳存放温度是",
+        options: ["A、0-5°C", "B、20-25°C", "C、30-40°C"],
+        answer: "B",
+        explanation: "无人机锂电池的最佳存放温度通常为20-25°C，避免在极端温度下存放。"
+      },
+      {
+        id: 75,
+        question: "无人机飞行控制器校准不包括",
+        options: ["A、加速度计校准", "B、陀螺仪校准", "C、遥控器按键校准"],
+        answer: "C",
+        explanation: "飞行控制器校准包括加速度计、陀螺仪、指南针等传感器校准，遥控器按键校准不属于飞控校准。"
+      },
+      {
+        id: 76,
+        question: "无人机在潮湿环境中使用后，应",
+        options: ["A、立即存放", "B、擦干水分并通风干燥", "C、用酒精清洗"],
+        answer: "B",
+        explanation: "在潮湿环境使用后，应及时擦干无人机表面水分，并放在通风处干燥，避免受潮损坏。"
+      },
+      {
+        id: 77,
+        question: "下列哪种情况不需要进行指南针校准",
+        options: ["A、首次飞行", "B、更换电池后", "C、长期未使用后"],
+        answer: "B",
+        explanation: "首次飞行、长期未使用、更换飞行地点等情况需要进行指南针校准，更换电池后一般不需要。"
+      },
+      {
+        id: 78,
+        question: "无人机电机异常发热可能是由于",
+        options: ["A、负载过大", "B、电机故障", "C、以上都是"],
+        answer: "C",
+        explanation: "负载过大或电机本身故障都可能导致电机异常发热，发现后应及时检查。"
+      },
+      {
+        id: 79,
+        question: "飞行日志应记录的内容不包括",
+        options: ["A、飞行时间和地点", "B、飞行天气条件", "C、飞行员的饮食"],
+        answer: "C",
+        explanation: "飞行日志应记录飞行时间、地点、天气、飞行状况等信息，飞行员的饮食与飞行无关，无需记录。"
+      },
+      {
+        id: 80,
+        question: "无人机存放时，应将电池",
+        options: ["A、充满电存放", "B、放电至30%-50%存放", "C、完全放电存放"],
+        answer: "B",
+        explanation: "锂电池长期存放时，建议放电至30%-50%电量，避免满电或完全放电存放，以延长电池寿命。"
+      },
+      {
+        id: 81,
+        question: "无人机飞行员在飞行前应检查的设备不包括",
+        options: ["A、飞行器", "B、遥控器", "C、机场塔台设备"],
+        answer: "C",
+        explanation: "飞行员飞行前应检查飞行器、遥控器、电池等设备，机场塔台设备不属于飞行员检查范围。"
+      },
+      {
+        id: 82,
+        question: "无人机系统中，用于感知飞行姿态的传感器是",
+        options: ["A、GPS", "B、陀螺仪", "C、气压计"],
+        answer: "B",
+        explanation: "陀螺仪用于感知无人机的角速度，从而确定飞行姿态；GPS用于定位；气压计用于测量高度。"
+      },
+      {
+        id: 83,
+        question: "下列哪种情况可能导致无人机失控",
+        options: ["A、电池电量不足", "B、GPS信号丢失", "C、以上都是"],
+        answer: "C",
+        explanation: "电池电量不足和GPS信号丢失都可能导致无人机失控，飞行中应密切关注这些情况。"
+      },
+      {
+        id: 84,
+        question: "无人机的飞行模式不包括",
+        options: ["A、手动模式", "B、自动模式", "C、远程模式"],
+        answer: "C",
+        explanation: "常见的无人机飞行模式包括手动模式、自动模式、半自主模式等，没有远程模式这一标准说法。"
+      },
+      {
+        id: 85,
+        question: "GPS定位至少需要几颗卫星",
+        options: ["A、3颗", "B、4颗", "C、5颗"],
+        answer: "B",
+        explanation: "GPS定位至少需要4颗卫星才能确定三维位置（经度、纬度、高度）。"
+      },
+      {
+        id: 86,
+        question: "无人机的返航点通常在什么位置设置",
+        options: ["A、起飞点", "B、目标点", "C、任意位置"],
+        answer: "A",
+        explanation: "无人机的返航点通常默认设置在起飞点，也可以手动设置其他返航点。"
+      },
+      {
+        id: 87,
+        question: "当无人机与遥控器失去信号时，将自动执行",
+        options: ["A、悬停", "B、返航", "C、降落"],
+        answer: "B",
+        explanation: "大多数无人机在与遥控器失去信号时，会自动执行返航程序，飞回返航点。"
+      },
+      {
+        id: 88,
+        question: "无人机的最大飞行高度受什么限制",
+        options: ["A、法律法规", "B、电池容量", "C、以上都是"],
+        answer: "C",
+        explanation: "无人机的最大飞行高度既受法律法规限制（如多数国家规定民用无人机最大飞行高度不超过120米），也受电池容量等技术因素限制。"
+      },
+      {
+        id: 89,
+        question: "下列哪种操作可能导致无人机炸鸡（坠机）",
+        options: ["A、低电量飞行", "B、在强风中飞行", "C、以上都是"],
+        answer: "C",
+        explanation: "低电量飞行可能导致空中断电，强风中飞行可能超出无人机抗风能力，都可能导致坠机。"
+      },
+      {
+        id: 90,
+        question: "无人机的视距内飞行是指",
+        options: ["A、飞行员肉眼可见无人机", "B、无人机在雷达监视范围内", "C、无人机在地面站监控范围内"],
+        answer: "A",
+        explanation: "视距内飞行指飞行员能够用肉眼看到无人机，通常距离不超过500米，高度不超过120米。"
+      },
+      {
+        id: 91,
+        question: "在人口密集区域飞行无人机时，应",
+        options: ["A、提高飞行高度", "B、降低飞行高度，便于观察", "C、禁止飞行"],
+        answer: "C",
+        explanation: "根据多数国家的规定，禁止在人口密集区域飞行无人机，以避免对人员造成伤害。"
+      },
+      {
+        id: 92,
+        question: "无人机飞行前，应了解飞行区域的",
+        options: ["A、天气状况", "B、空域限制", "C、以上都是"],
+        answer: "C",
+        explanation: "飞行前应了解飞行区域的天气状况和空域限制，确保飞行安全合法。"
+      },
+      {
+        id: 93,
+        question: "下列哪个区域禁止无人机飞行",
+        options: ["A、机场附近", "B、军事禁区", "C、以上都是"],
+        answer: "C",
+        explanation: "机场附近和军事禁区都属于敏感区域，禁止无人机飞行，以保障航空安全和国家安全。"
+      },
+      {
+        id: 94,
+        question: "无人机飞行时，与障碍物的安全距离应不少于",
+        options: ["A、5米", "B、10米", "C、30米"],
+        answer: "B",
+        explanation: "为确保安全，无人机飞行时与障碍物的安全距离应不少于10米。"
+      },
+      {
+        id: 95,
+        question: "无人机夜间飞行时，应",
+        options: ["A、开启灯光", "B、降低飞行高度", "C、禁止飞行"],
+        answer: "A",
+        explanation: "夜间飞行时，无人机应开启灯光，便于飞行员观察和避让，同时也让其他航空器能发现无人机。"
+      },
+      {
+        id: 96,
+        question: "无人机飞行时，遇到紧急情况应首先",
+        options: ["A、保人机安全", "B、保数据安全", "C、保设备安全"],
+        answer: "A",
+        explanation: "遇到紧急情况时，应首先确保人员安全，其次才考虑设备和数据安全。"
+      },
+      {
+        id: 97,
+        question: "下列哪种情况不需要申请空域",
+        options: ["A、在自家院子里飞行", "B、在机场附近飞行", "C、在军事基地附近飞行"],
+        answer: "A",
+        explanation: "在自家院子等私人区域低高度飞行通常不需要申请空域，而在机场、军事基地附近飞行需要申请或禁止飞行。"
+      },
+      {
+        id: 98,
+        question: "无人机飞行员应遵守的基本原则是",
+        options: ["A、安全第一", "B、效率第一", "C、乐趣第一"],
+        answer: "A",
+        explanation: "无人机飞行应始终坚持安全第一的原则，确保人员和财产安全。"
+      },
+      {
+        id: 99,
+        question: "在恶劣天气条件下，无人机飞行员应",
+        options: ["A、谨慎飞行", "B、取消飞行", "C、降低飞行高度"],
+        answer: "B",
+        explanation: "恶劣天气条件下飞行风险极大，无人机飞行员应取消飞行计划，待天气好转后再飞。"
+      },
+      {
+        id: 100,
+        question: "无人机飞行结束后，应",
+        options: ["A、立即收起来", "B、检查设备并记录飞行日志", "C、先下载照片和视频"],
+        answer: "B",
+        explanation: "飞行结束后，应先检查无人机各部件是否完好，记录飞行日志，再进行其他操作。"
+      }
+    ];
+
+    // 全局变量
+    let currentMode = null; // 刷题模式：range1-50, range51-100, random
+    let currentQuestionIndex = 0; // 当前题目的索引
+    let questionOrder = []; // 题目顺序数组
+    let answered = false; // 是否已经回答
+
+    // DOM元素
+    const modeSelector = document.getElementById('mode-selector');
+    const questionContainer = document.getElementById('question-container');
+    const completeMessage = document.getElementById('complete-message');
+    const questionNumber = document.getElementById('question-number');
+    const questionContent = document.getElementById('question-content');
+    const optionsContainer = document.getElementById('options');
+    const explanation = document.getElementById('explanation');
+    const correctAnswerEl = document.getElementById('correct-answer');
+    const explanationText = document.getElementById('explanation-text');
+    const nextQuestionBtn = document.getElementById('next-question');
+    const progressEl = document.getElementById('progress');
+    const restartBtn = document.getElementById('restart');
+    const themeToggle = document.getElementById('theme-toggle');
+
+    // 初始化主题
+    function initTheme() {
+      if (localStorage.getItem('theme') === 'dark' || 
+          (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+
+    // 切换主题
+    themeToggle.addEventListener('click', () => {
+      if (document.documentElement.classList.contains('dark')) {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      } else {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      }
+    });
+
+    // 生成题目顺序
+    function generateQuestionOrder(mode) {
+      const order = [];
+      if (mode === 'range1-50') {
+        // 1-50题顺序模式
+        for (let i = 0; i < 50; i++) {
+          order.push(i);
+        }
+      } else if (mode === 'range51-100') {
+        // 51-100题顺序模式
+        for (let i = 50; i < 100; i++) {
+          order.push(i);
+        }
+      } else if (mode === 'random') {
+        // 随机模式 - 从所有100题中随机
+        const temp = [...Array(100).keys()];
+        for (let i = temp.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [temp[i], temp[j]] = [temp[j], temp[i]];
+        }
+        order.push(...temp);
+      }
+      return order;
+    }
+
+    // 显示当前题目
+    function displayCurrentQuestion() {
+      if (currentQuestionIndex >= questionOrder.length) {
+        // 所有题目完成
+        questionContainer.classList.add('hidden');
+        completeMessage.classList.remove('hidden');
+        return;
+      }
+
+      const questionIndex = questionOrder[currentQuestionIndex];
+      const question = questionBank[questionIndex];
+      
+      questionNumber.textContent = `第${question.id}题`;
+      questionContent.textContent = question.question;
+      progressEl.textContent = `${currentQuestionIndex + 1}/${questionOrder.length}`;
+      
+      // 清空选项
+      optionsContainer.innerHTML = '';
+      
+      // 生成选项
+      question.options.forEach(option => {
+        const optionBtn = document.createElement('button');
+        optionBtn.className = 'w-full text-left py-3 px-4 bg-gray-100 dark:bg-gray-700/50 rounded-lg font-medium option-hover btn-effect transition-colors';
+        optionBtn.textContent = option;
+        optionBtn.dataset.option = option.charAt(0); // 获取选项字母A/B/C/D
+        
+        optionBtn.addEventListener('click', () => {
+          if (!answered) {
+            checkAnswer(optionBtn, optionBtn.dataset.option, question.answer);
+          }
+        });
+        
+        optionsContainer.appendChild(optionBtn);
+      });
+      
+      // 重置状态
+      explanation.classList.add('hidden');
+      nextQuestionBtn.classList.add('hidden');
+      answered = false;
+    }
+
+    // 检查答案
+    function checkAnswer(button, selectedOption, correctOption) {
+      answered = true;
+      const allOptions = optionsContainer.querySelectorAll('button');
+      
+      // 显示所有选项的正确状态
+      allOptions.forEach(btn => {
+        const option = btn.dataset.option;
+        btn.disabled = true;
+        
+        if (option === correctOption) {
+          // 正确答案
+          btn.classList.remove('bg-gray-100', 'dark:bg-gray-700/50');
+          btn.classList.add('bg-secondary/20', 'text-secondary', 'border', 'border-secondary/30');
+        } else if (option === selectedOption) {
+          // 错误选择
+          btn.classList.remove('bg-gray-100', 'dark:bg-gray-700/50');
+          btn.classList.add('bg-red-100', 'text-red-600', 'dark:bg-red-900/30', 'dark:text-red-400', 'border', 'border-red-300', 'dark:border-red-700');
+        }
+      });
+      
+      // 显示解析
+      correctAnswerEl.textContent = `正确答案：${correctOption}`;
+      explanationText.textContent = questionBank[questionOrder[currentQuestionIndex]].explanation;
+      explanation.classList.remove('hidden');
+      
+      // 显示下一题按钮
+      nextQuestionBtn.classList.remove('hidden');
+    }
+
+    // 下一题
+    function nextQuestion() {
+      currentQuestionIndex++;
+      displayCurrentQuestion();
+      // 滚动到顶部
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 开始刷题
+    function startQuiz(mode) {
+      currentMode = mode;
+      questionOrder = generateQuestionOrder(mode);
+      currentQuestionIndex = 0;
+      
+      modeSelector.classList.add('hidden');
+      questionContainer.classList.remove('hidden');
+      completeMessage.classList.add('hidden');
+      
+      displayCurrentQuestion();
+    }
+
+    // 重新开始
+    function restartQuiz() {
+      completeMessage.classList.add('hidden');
+      modeSelector.classList.remove('hidden');
+    }
+
+    // 事件监听
+    document.getElementById('range-1-50').addEventListener('click', () => startQuiz('range1-50'));
+    document.getElementById('range-51-100').addEventListener('click', () => startQuiz('range51-100'));
+    document.getElementById('random-mode').addEventListener('click', () => startQuiz('random'));
+    nextQuestionBtn.addEventListener('click', nextQuestion);
+    restartBtn.addEventListener('click', restartQuiz);
+
+    // 初始化
+    initTheme();
+  </script>
+</body>
+</html>
