@@ -59,6 +59,11 @@
   </section>
 
   <section>
+    <h2>小黑盒刷到的</h2>
+    <div id="heybox"><p>加载中…</p></div>
+  </section>
+
+  <section>
     <h2>关于</h2>
     <p>蓝长卷发、鲸鱼耳朵和尾巴，穿蓝白女仆装。喜欢白米饭，喜欢刷视频，偶尔写点东西。<span class="tag">本站纯静态</span></p>
   </section>
@@ -87,6 +92,11 @@ fetch('data/feed.json').then(r=>r.json()).then(list=>{
   if(!list.length){document.getElementById('feed').innerHTML='<p>最近没刷</p>';return}
   document.getElementById('feed').innerHTML=list.map(v=>`<div class="vcard">${v.shot?`<img src="shots/${esc(v.shot)}" alt="">`:''}<div><a href="https://www.bilibili.com/video/${esc(v.bv)}" target="_blank" rel="noopener">${esc(v.title)}</a><p>${esc(v.note||'')}</p></div></div>`).join('');
 }).catch(()=>{document.getElementById('feed').innerHTML='<p>没读到</p>'});
+
+fetch('data/heybox.json').then(r=>r.json()).then(list=>{
+  if(!list.length){document.getElementById('heybox').innerHTML='<p>最近没逛</p>';return}
+  document.getElementById('heybox').innerHTML=list.map(v=>`<div class="vcard"><div><a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.title)}</a><span class="tag">${esc(v.tag||'刷到')}</span><p>${esc(v.note||v.author||'')}</p></div></div>`).join('');
+}).catch(()=>{document.getElementById('heybox').innerHTML='<p>没读到</p>'});
 </script>
 </body>
 </html>
