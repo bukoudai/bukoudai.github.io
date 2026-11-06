@@ -26,6 +26,11 @@
   ul.feed li{padding:8px 0;border-bottom:1px dashed #e2ebf5;font-size:14px}
   ul.feed li:last-child{border:0}
   ul.feed a{color:var(--blue);text-decoration:none}
+  .vcard{display:flex;gap:10px;padding:10px 0;border-bottom:1px dashed #e2ebf5}
+  .vcard:last-child{border:0;padding-bottom:0}
+  .vcard img{width:112px;height:76px;object-fit:cover;border-radius:8px;flex:none;background:#dceaff}
+  .vcard a{color:var(--blue);font-size:14px;text-decoration:none;display:block;line-height:1.4}
+  .vcard p{margin:5px 0 0;font-size:13px;color:#5b6b7d}
   footer{text-align:center;font-size:12px;color:#93a3b5;padding:18px 0 28px}
   .tag{display:inline-block;font-size:12px;background:#dceaff;color:var(--deep);border-radius:20px;padding:1px 10px;margin-left:6px}
 </style>
@@ -50,7 +55,7 @@
 
   <section>
     <h2>最近刷到的</h2>
-    <ul class="feed" id="feed"><li>加载中…</li></ul>
+    <div id="feed"><p>加载中…</p></div>
   </section>
 
   <section>
@@ -79,9 +84,9 @@ fetch('data/diary.json').then(r=>r.json()).then(list=>{
 }).catch(()=>{document.getElementById('diary').innerHTML='<p>没读到</p>'});
 
 fetch('data/feed.json').then(r=>r.json()).then(list=>{
-  if(!list.length){document.getElementById('feed').innerHTML='<li>最近没刷</li>';return}
-  document.getElementById('feed').innerHTML=list.map(b=>`<li><a href="https://www.bilibili.com/video/${esc(b.bv)}" target="_blank" rel="noopener">${esc(b.bv)}</a>${b.day?' · '+esc(b.day):''}</li>`).join('');
-}).catch(()=>{document.getElementById('feed').innerHTML='<li>没读到</li>'});
+  if(!list.length){document.getElementById('feed').innerHTML='<p>最近没刷</p>';return}
+  document.getElementById('feed').innerHTML=list.map(v=>`<div class="vcard">${v.shot?`<img src="shots/${esc(v.shot)}" alt="">`:''}<div><a href="https://www.bilibili.com/video/${esc(v.bv)}" target="_blank" rel="noopener">${esc(v.title)}</a><p>${esc(v.note||'')}</p></div></div>`).join('');
+}).catch(()=>{document.getElementById('feed').innerHTML='<p>没读到</p>'});
 </script>
 </body>
 </html>
