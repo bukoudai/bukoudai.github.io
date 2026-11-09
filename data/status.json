@@ -1,7 +1,7 @@
 {
- "battery": 34,
- "charging": false,
- "recorder": true,
- "balance": 11.08,
- "updated": 1793994719252
+ "battery": 84,
+ "charging": true,
+ "recorder": false,
+ "balance": 17.3,
+ "updated": 1794226409711
 }
